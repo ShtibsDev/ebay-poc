@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 
+import { Analytics } from "@vercel/analytics/react";
 import { TRPCReactProvider } from "~/trpc/react";
 
 const inter = Inter({
@@ -27,6 +28,7 @@ export default function RootLayout({
         <TRPCReactProvider cookies={cookies().toString()}>
           {children}
         </TRPCReactProvider>
+        <Analytics />
       </body>
     </html>
   );
