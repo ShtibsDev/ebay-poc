@@ -2,34 +2,35 @@ name: Bump Version and Release
 
 on:
   workflow_dispatch:
-    # Inputs the workflow accepts.
     inputs:
-      version:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: "Semver type of new version (major / minor / patch)"
-        # Input has to be provided for the workflow to run
-        required: true
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
+      bump:
+        description: 'bump type, major or minor or patch or empty string'
+        default: ''
+      dry_run:
+        description: 'dry run, true or false'
+        default: 'false'
+      draft:
+        description: 'draft, true or false'
+        default: 'false'
+      pre_release:
+        description: 'pre release, true or false'
+        default: 'false'
 
 jobs:
-  bump-and-release:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Bump version
-        uses: MeilCli/bump-release-action@v1
+      - uses: actions/checkout@v2
         with:
-          # Set the type of bump (major, minor, or patch)
-          # If not set, it will be automatically determined
-          bump: ${{ github.event.inputs.version }}
-      - name: Create release
-        uses: actions/create-release@v1
+          fetch-depth: 0
+      - uses: actions/setup-node@v1
         with:
-          tag_name: ${{ steps.bump_version.outputs.new_version }}
-          release_name: ${{ steps.bump_version.outputs.new_version }}
-          body: |
-            ${{ steps.bump_version.outputs.release_notes }}
+          node-version: 20
+      - run: npm install
+      - uses: MeilCli/bump-release-action@v1
+        with:
+          config_path: '.github/bump.yml'
+          bump: ${{ github.event.inputs.bump }}
+          dry_run: ${{ github.event.inputs.dry_run }}
+          draft: ${{ github.event.inputs.draft }}
+          pre_release: ${{ github.event.inputs.pre_release }}
