@@ -51,4 +51,4 @@ jobs:
     - name: Bump Version
       run: npm version ${{ github.event.inputs.version }} --sign-git-tag
     - name: Push latest version
-      run: git push origin main --follow-tags
+      run: git push origin main --follow-tags --force
