@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Bump version
-        uses: gr2m/bump-release-action@v1
+        uses: MeilCli/bump-release-action@v1
         with:
           # Set the type of bump (major, minor, or patch)
           # If not set, it will be automatically determined
