@@ -1,0 +1,35 @@
+name: Bump Version and Release
+
+on:
+  workflow_dispatch:
+    # Inputs the workflow accepts.
+    inputs:
+      version:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: "Semver type of new version (major / minor / patch)"
+        # Input has to be provided for the workflow to run
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  bump-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Bump version
+        uses: gr2m/bump-release-action@v1
+        with:
+          # Set the type of bump (major, minor, or patch)
+          # If not set, it will be automatically determined
+          bump: ${{ github.event.inputs.version }}
+      - name: Create release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.bump_version.outputs.new_version }}
+          release_name: ${{ steps.bump_version.outputs.new_version }}
+          body: |
+            ${{ steps.bump_version.outputs.release_notes }}
