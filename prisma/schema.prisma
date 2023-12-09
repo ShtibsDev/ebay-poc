@@ -24,9 +24,9 @@ model Account {
   scope             String?
   id_token          String? @map("id_token")
   session_state     String?
+  userId            String  @db.Uuid
 
-  userId String @db.Uuid
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -36,9 +36,9 @@ model Session {
   id           String   @id @default(uuid()) @db.Uuid
   sessionToken String   @unique @map("session_token")
   expires      DateTime
+  userId       String   @map("user_id") @db.Uuid
 
-  userId String @map("user_id") @db.Uuid
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -50,8 +50,19 @@ model User {
   emailVerified DateTime? @map("email_verified")
   image         String?
 
+  avatarid Int?          @map("avatar_id")
+  avarar   FileMetaData? @relation(fields: [avatarid], references: [id])
+
   accounts Account[]
   sessions Session[]
+  items    Item[]
+  reviews  Review[]
+  orders   Order[]
+  chats    Chat[]
+  messages Message[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("users")
 }
@@ -63,4 +74,141 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model Item {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(255)
+  description String
+  price       Decimal
+  quantity    Int      @default(0)
+  category    Category
+  sellerId    String   @db.Uuid
+
+  seller  User           @relation(fields: [sellerId], references: [id])
+  images  FileMetaData[]
+  reviews Review[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("items")
+}
+
+model Order {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("orders")
+}
+
+model Review {
+  id          String  @id @default(uuid()) @db.Uuid
+  ranking     Decimal
+  title       String  @db.VarChar(255)
+  description String
+  itemId      String  @map("item_id") @db.Uuid
+  authorId    String  @map("author_id") @db.Uuid
+
+  item   Item @relation(fields: [itemId], references: [id])
+  author User @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("reviews")
+}
+
+model Chat {
+  id Int @id @default(autoincrement())
+
+  messages Message[]
+  users    User[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("chats")
+}
+
+model Message {
+  id      Int    @id @default(autoincrement())
+  text    String @default("")
+  imageId Int?   @map("image_id")
+  chatId  Int    @map("chat_id")
+  userId  String @map("user_id") @db.Uuid
+
+  image FileMetaData? @relation(fields: [imageId], references: [id])
+  chat  Chat          @relation(fields: [chatId], references: [id])
+  user  User          @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("messages")
+}
+
+model FileMetaData {
+  id       Int     @id @default(autoincrement())
+  filename String  @db.VarChar(255)
+  type     String  @db.VarChar(100)
+  url      String  @db.VarChar(2048)
+  itemId   String? @map("item_id") @db.Uuid
+
+  item     Item?     @relation(fields: [itemId], references: [id])
+  messages Message[]
+  User     User[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("files")
+}
+
+enum Condition {
+  New
+  Used
+}
+
+enum Category {
+  Antiques
+  Art
+  Baby
+  Books
+  BusinessIndustrial
+  CamerasPhoto
+  CellPhonesAccessories
+  ClothingShoesAccessories
+  CoinsPaperMoney
+  Collectibles
+  ComputersTabletsNetworking
+  ConsumerElectronics
+  Crafts
+  DollsBears
+  DvDsMovies
+  EntertainmentMemorabilia
+  EverythingElse
+  GiftCardsCoupons
+  HealthBeauty
+  HomeGarden
+  JewelryWatches
+  Music
+  MusicalInstrumentsGear
+  PetSupplies
+  PotteryGlass
+  RealEstate
+  SpecialtyServices
+  SportingGoods
+  SportsMemorabiliaCardsFanShop
+  Stamps
+  TicketsExperiences
+  ToysHobbies
+  Travel
+  VideoGamesConsoles
+  VehiclesParts
 }
