@@ -45,7 +45,10 @@ jobs:
       run: |
         git config user.name 'Ofir Stiber'
         git config user.email 'ofirstiberdev@gmail.com'
-    - name: bump version
+        git config gpg.format ssh
+        git config user.signingKey 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+NeUWoq3+J4Cq8vKbJN4eQTclv//5Kdfv+rngLyIHv ofirstiberdev@gmail.com'
+
+    - name: Bump Version
       run: npm version ${{ github.event.inputs.version }} --sign-git-tag
     - name: Push latest version
       run: git push origin main --follow-tags
